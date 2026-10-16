@@ -14,7 +14,7 @@ from model import create_model
 
 TEST_IMAGE_DIR = "data/Test"
 TEST_ANNOTATION_FILE = "data/test.txt"
-MODEL_PATH = "models/best_model.pth"
+MODEL_PATH = "models/finetuned_augmented_model.pth"
 
 BATCH_SIZE = 16
 NUM_CLASSES = 200
