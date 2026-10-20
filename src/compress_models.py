@@ -7,6 +7,8 @@ MODEL_FILES = [
     "best_model.pth",
     "finetuned_model.pth",
     "finetuned_augmented_model.pth",
+    "finetuned_regularized_model.pth",
+    "finetuned_label_smoothing_model.pth",
 ]
 
 OUTPUT_DIR = "models_fp16"
@@ -20,6 +22,10 @@ def main():
         output_path = os.path.join(OUTPUT_DIR, filename)
 
         print(f"\nProcessing: {filename}")
+
+        if not os.path.exists(input_path):
+            print(f"Skipping: File not found: {input_path}")
+            continue
 
         # Load the original checkpoint.
         state_dict = torch.load(
@@ -45,9 +51,9 @@ def main():
         compressed_size = os.path.getsize(output_path) / (1024 ** 2)
 
         print(f"Original size: {original_size:.2f} MB")
-        print(f"FP16 size:    {compressed_size:.2f} MB")
+        print(f"FP16 size:     {compressed_size:.2f} MB")
         print(
-            f"Reduction:    "
+            f"Reduction:     "
             f"{(1 - compressed_size / original_size) * 100:.2f}%"
         )
 

@@ -10,7 +10,7 @@ data/Train/
 data/Test/
 data/*.zip
 
-# Trained model files
+# Original trained model files
 models/*.pth
 models/*.pt
 

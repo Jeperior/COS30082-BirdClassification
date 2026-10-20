@@ -1,7 +1,10 @@
 import os
+import csv
 import torch
+import numpy as np
+
 from torch.utils.data import DataLoader
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix
 
 from dataset import BirdDataset
 from transforms import test_transform
@@ -14,17 +17,22 @@ from model import create_model
 
 TEST_IMAGE_DIR = "data/Test"
 TEST_ANNOTATION_FILE = "data/test.txt"
-MODEL_PATH = "models/finetuned_augmented_model.pth"
+
+MODEL_PATH = "models/finetuned_label_smoothing_model.pth"
 
 BATCH_SIZE = 16
 NUM_CLASSES = 200
+
+RESULTS_DIR = "results"
 
 
 # ==========================================
 # 2. Select device
 # ==========================================
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)
 
 print("Using device:", device)
 
@@ -65,6 +73,8 @@ model.load_state_dict(checkpoint)
 model = model.to(device)
 model.eval()
 
+print("Loaded model:", MODEL_PATH)
+
 
 # ==========================================
 # 5. Evaluate model
@@ -83,12 +93,17 @@ with torch.no_grad():
 
         predictions = outputs.argmax(dim=1)
 
-        all_predictions.extend(predictions.cpu().tolist())
-        all_labels.extend(labels.tolist())
+        all_predictions.extend(
+            predictions.cpu().tolist()
+        )
+
+        all_labels.extend(
+            labels.tolist()
+        )
 
 
 # ==========================================
-# 6. Calculate required metrics
+# 6. Calculate overall metrics
 # ==========================================
 
 top1_accuracy = accuracy_score(
@@ -98,33 +113,39 @@ top1_accuracy = accuracy_score(
 
 class_accuracies = []
 
+class_correct = np.zeros(NUM_CLASSES, dtype=int)
+class_total = np.zeros(NUM_CLASSES, dtype=int)
+
+for true_label, predicted_label in zip(
+    all_labels,
+    all_predictions
+):
+
+    class_total[true_label] += 1
+
+    if true_label == predicted_label:
+        class_correct[true_label] += 1
+
+
 for class_id in range(NUM_CLASSES):
 
-    # Find test images belonging to this species.
-    class_indices = [
-        i for i, label in enumerate(all_labels)
-        if label == class_id
-    ]
+    if class_total[class_id] > 0:
 
-    # Calculate accuracy for this species.
-    if class_indices:
-
-        correct = sum(
-            all_predictions[i] == all_labels[i]
-            for i in class_indices
+        accuracy = (
+            class_correct[class_id]
+            / class_total[class_id]
         )
 
-        class_accuracy = correct / len(class_indices)
-        class_accuracies.append(class_accuracy)
+        class_accuracies.append(accuracy)
 
 
 average_class_accuracy = (
-    sum(class_accuracies) / len(class_accuracies)
-) * 100
+    np.mean(class_accuracies) * 100
+)
 
 
 # ==========================================
-# 7. Display results
+# 7. Display overall results
 # ==========================================
 
 print("\n========== TEST RESULTS ==========")
@@ -139,3 +160,151 @@ print(
 print("Number of classes evaluated:", len(class_accuracies))
 
 print("==================================")
+
+
+# ==========================================
+# 8. Load class names
+# ==========================================
+
+import json
+
+CLASS_NAMES_PATH = "class_names.json"
+
+class_names = {}
+
+if os.path.exists(CLASS_NAMES_PATH):
+
+    with open(CLASS_NAMES_PATH, "r", encoding="utf-8") as file:
+        loaded_names = json.load(file)
+
+    if isinstance(loaded_names, list):
+        class_names = {
+            index: name
+            for index, name in enumerate(loaded_names)
+        }
+
+    elif isinstance(loaded_names, dict):
+        class_names = {
+            int(key): value
+            for key, value in loaded_names.items()
+        }
+
+
+def get_class_name(class_id):
+    return class_names.get(class_id, f"Class {class_id}")
+
+
+# ==========================================
+# 9. Per-class accuracy report
+# ==========================================
+
+class_results = []
+
+for class_id in range(NUM_CLASSES):
+
+    if class_total[class_id] == 0:
+        continue
+
+    accuracy = (
+        class_correct[class_id]
+        / class_total[class_id]
+    ) * 100
+
+    class_results.append({
+        "class_id": class_id,
+        "species": get_class_name(class_id),
+        "correct": int(class_correct[class_id]),
+        "total": int(class_total[class_id]),
+        "accuracy": accuracy
+    })
+
+
+class_results_sorted = sorted(
+    class_results,
+    key=lambda item: item["accuracy"]
+)
+
+
+print("\n========== 10 LOWEST-ACCURACY SPECIES ==========")
+
+for result in class_results_sorted[:10]:
+
+    print(
+        f"{result['species']}: "
+        f"{result['accuracy']:.2f}% "
+        f"({result['correct']}/{result['total']})"
+    )
+
+
+print("\n========== 10 HIGHEST-ACCURACY SPECIES ==========")
+
+for result in reversed(class_results_sorted[-10:]):
+
+    print(
+        f"{result['species']}: "
+        f"{result['accuracy']:.2f}% "
+        f"({result['correct']}/{result['total']})"
+    )
+
+
+# ==========================================
+# 10. Save per-class results
+# ==========================================
+
+os.makedirs(RESULTS_DIR, exist_ok=True)
+
+csv_path = os.path.join(
+    RESULTS_DIR,
+    "label_smoothing_per_class_accuracy.csv"
+)
+
+with open(
+    csv_path,
+    "w",
+    newline="",
+    encoding="utf-8"
+) as file:
+
+    writer = csv.DictWriter(
+        file,
+        fieldnames=[
+            "class_id",
+            "species",
+            "correct",
+            "total",
+            "accuracy"
+        ]
+    )
+
+    writer.writeheader()
+    writer.writerows(class_results)
+
+
+print(f"\nPer-class results saved to: {csv_path}")
+
+
+# ==========================================
+# 11. Generate confusion matrix
+# ==========================================
+
+matrix = confusion_matrix(
+    all_labels,
+    all_predictions,
+    labels=list(range(NUM_CLASSES))
+)
+
+matrix_path = os.path.join(
+    RESULTS_DIR,
+    "label_smoothing_confusion_matrix.csv"
+)
+
+np.savetxt(
+    matrix_path,
+    matrix,
+    delimiter=",",
+    fmt="%d"
+)
+
+print(f"Confusion matrix saved to: {matrix_path}")
+
+print("\nEvaluation complete.")
