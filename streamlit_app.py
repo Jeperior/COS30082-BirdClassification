@@ -20,7 +20,7 @@ SRC_DIR = os.path.join(PROJECT_DIR, "src")
 MODEL_PATH = os.path.join(
     PROJECT_DIR,
     "models_fp16",
-    "finetuned_regularized_model.pth"
+    "final_full_data_model.pth"
 )
 
 NUM_CLASSES = 200

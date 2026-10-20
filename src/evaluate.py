@@ -18,7 +18,7 @@ from model import create_model
 TEST_IMAGE_DIR = "data/Test"
 TEST_ANNOTATION_FILE = "data/test.txt"
 
-MODEL_PATH = "models/finetuned_label_smoothing_model.pth"
+MODEL_PATH = "models_fp16/final_full_data_model.pth"
 
 BATCH_SIZE = 16
 NUM_CLASSES = 200

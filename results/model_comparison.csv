@@ -1,0 +1,6 @@
+experiment,checkpoint,test_images,top1_accuracy,average_class_accuracy,classes_evaluated
+Baseline,best_model.pth,1204,46.01,43.68,200
+Fine-tuning,finetuned_model.pth,1204,76.5,75.78,200
+Data augmentation,finetuned_augmented_model.pth,1204,77.66,76.9,200
+Regularised fine-tuning,finetuned_regularized_model.pth,1204,77.99,77.28,200
+Label smoothing,finetuned_label_smoothing_model.pth,1204,77.99,77.53,200

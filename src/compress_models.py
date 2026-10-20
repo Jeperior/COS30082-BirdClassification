@@ -9,6 +9,7 @@ MODEL_FILES = [
     "finetuned_augmented_model.pth",
     "finetuned_regularized_model.pth",
     "finetuned_label_smoothing_model.pth",
+    "final_full_data_model.pth",
 ]
 
 OUTPUT_DIR = "models_fp16"
