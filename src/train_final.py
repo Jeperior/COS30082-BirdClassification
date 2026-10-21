@@ -11,10 +11,7 @@ from dataset import BirdDataset
 from transforms import train_transform
 
 
-# ==========================================
 # Configuration
-# ==========================================
-
 SEED = 42
 
 DATA_DIR = "data"
@@ -32,11 +29,7 @@ FEATURE_LEARNING_RATE = 5e-6
 CLASSIFIER_LEARNING_RATE = 2e-5
 WEIGHT_DECAY = 0.01
 
-
-# ==========================================
 # Reproducibility
-# ==========================================
-
 random.seed(SEED)
 np.random.seed(SEED)
 torch.manual_seed(SEED)
@@ -48,11 +41,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 print(f"Using device: {device}")
 
-
-# ==========================================
 # Validate paths
-# ==========================================
-
 if not os.path.exists(INITIAL_MODEL_PATH):
     raise FileNotFoundError(
         f"Starting checkpoint not found: {INITIAL_MODEL_PATH}"
@@ -63,11 +52,7 @@ if not os.path.exists(ANNOTATION_FILE):
         f"Annotation file not found: {ANNOTATION_FILE}"
     )
 
-
-# ==========================================
 # Load the full training dataset
-# ==========================================
-
 train_dataset = BirdDataset(
     image_dir=TRAIN_IMAGE_DIR,
     annotation_file=ANNOTATION_FILE,
@@ -86,11 +71,7 @@ print(f"Total training images: {len(train_dataset)}")
 print(f"Batch size: {BATCH_SIZE}")
 print(f"Training epochs: {NUM_EPOCHS}")
 
-
-# ==========================================
 # Load the augmented fine-tuned model
-# ==========================================
-
 weights = ConvNeXt_Tiny_Weights.IMAGENET1K_V1
 
 model = convnext_tiny(weights=weights)
@@ -110,10 +91,7 @@ model = model.to(device)
 print(f"Loaded checkpoint: {INITIAL_MODEL_PATH}")
 
 
-# ==========================================
 # Configure trainable layers
-# ==========================================
-
 # Freeze all parameters first.
 for parameter in model.parameters():
     parameter.requires_grad = False
@@ -128,10 +106,7 @@ for parameter in model.classifier.parameters():
     parameter.requires_grad = True
 
 
-# ==========================================
 # Loss and optimizer
-# ==========================================
-
 criterion = nn.CrossEntropyLoss()
 
 optimizer = torch.optim.AdamW(
@@ -152,11 +127,7 @@ optimizer = torch.optim.AdamW(
     weight_decay=WEIGHT_DECAY
 )
 
-
-# ==========================================
 # Mixed precision training setup
-# ==========================================
-
 use_amp = device.type == "cuda"
 
 scaler = torch.amp.GradScaler(
@@ -165,19 +136,12 @@ scaler = torch.amp.GradScaler(
 )
 
 
-# ==========================================
 # Training setup
-# ==========================================
-
 os.makedirs(os.path.dirname(SAVE_MODEL_PATH), exist_ok=True)
 
 history = []
 
-
-# ==========================================
 # Training on the full dataset
-# ==========================================
-
 for epoch in range(NUM_EPOCHS):
 
     model.train()
@@ -236,11 +200,7 @@ for epoch in range(NUM_EPOCHS):
         "learning_rates": current_lrs
     })
 
-
-# ==========================================
 # Save the final model
-# ==========================================
-
 torch.save(
     model.state_dict(),
     SAVE_MODEL_PATH

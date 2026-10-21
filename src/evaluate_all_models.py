@@ -10,10 +10,7 @@ from transforms import test_transform
 from model import create_model
 
 
-# ==========================================
 # 1. Configuration
-# ==========================================
-
 TEST_IMAGE_DIR = "data/Test"
 TEST_ANNOTATION_FILE = "data/test.txt"
 
@@ -34,22 +31,14 @@ MODELS = {
     "Full dataset": "final_full_data_model.pth"
 }
 
-
-# ==========================================
 # 2. Select device
-# ==========================================
-
 device = torch.device(
     "cuda" if torch.cuda.is_available() else "cpu"
 )
 
 print("Using device:", device)
 
-
-# ==========================================
 # 3. Load test dataset
-# ==========================================
-
 test_dataset = BirdDataset(
     image_dir=TEST_IMAGE_DIR,
     annotation_file=TEST_ANNOTATION_FILE,
@@ -65,11 +54,7 @@ test_loader = DataLoader(
 
 print("Test images:", len(test_dataset))
 
-
-# ==========================================
 # 4. Evaluate each model
-# ==========================================
-
 all_results = []
 
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -209,11 +194,7 @@ for model_name, checkpoint_name in MODELS.items():
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
-
-# ==========================================
 # 5. Display comparison table
-# ==========================================
-
 print("\n\n")
 print("=" * 85)
 print("FINAL MODEL COMPARISON")
@@ -237,11 +218,7 @@ for result in all_results:
 
 print("=" * 85)
 
-
-# ==========================================
 # 6. Save comparison results
-# ==========================================
-
 csv_path = os.path.join(
     RESULTS_DIR,
     "model_comparison.csv"

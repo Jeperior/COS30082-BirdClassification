@@ -10,11 +10,7 @@ from dataset import BirdDataset
 from transforms import test_transform
 from model import create_model
 
-
-# ==========================================
 # 1. Configuration
-# ==========================================
-
 TEST_IMAGE_DIR = "data/Test"
 TEST_ANNOTATION_FILE = "data/test.txt"
 
@@ -30,11 +26,7 @@ BATCH_SIZE = 16
 # Copy only the first 50 mistakes to inspect initially.
 MAX_IMAGES_TO_COPY = 50
 
-
-# ==========================================
 # 2. Setup
-# ==========================================
-
 device = torch.device(
     "cuda" if torch.cuda.is_available() else "cpu"
 )
@@ -44,11 +36,7 @@ print("Using device:", device)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs("results", exist_ok=True)
 
-
-# ==========================================
 # 3. Load class names
-# ==========================================
-
 import json
 
 with open(CLASS_NAMES_PATH, "r", encoding="utf-8") as file:
@@ -69,11 +57,7 @@ else:
 def get_class_name(class_id):
     return class_names.get(class_id, f"Class {class_id}")
 
-
-# ==========================================
 # 4. Load test dataset
-# ==========================================
-
 test_dataset = BirdDataset(
     image_dir=TEST_IMAGE_DIR,
     annotation_file=TEST_ANNOTATION_FILE,
@@ -87,11 +71,7 @@ test_loader = DataLoader(
     num_workers=0
 )
 
-
-# ==========================================
 # 5. Load trained model
-# ==========================================
-
 model = create_model(num_classes=NUM_CLASSES)
 
 checkpoint = torch.load(
@@ -106,11 +86,7 @@ model.eval()
 
 print("Loaded model:", MODEL_PATH)
 
-
-# ==========================================
 # 6. Find misclassified images
-# ==========================================
-
 mistakes = []
 
 with torch.no_grad():
@@ -144,14 +120,9 @@ with torch.no_grad():
                     "confidence": confidences[i].item()
                 })
 
-
-# ==========================================
 # 7. Correctly map mistakes to filenames
-# ==========================================
-
 # Run a straightforward indexed pass so every prediction is
 # associated with the correct original filename.
-
 mistakes = []
 sample_index = 0
 
@@ -187,11 +158,7 @@ with torch.no_grad():
 
             sample_index += 1
 
-
-# ==========================================
 # 8. Save mistake report
-# ==========================================
-
 mistakes.sort(
     key=lambda item: item["confidence"],
     reverse=True
@@ -221,11 +188,7 @@ with open(
     writer.writeheader()
     writer.writerows(mistakes)
 
-
-# ==========================================
 # 9. Copy selected images
-# ==========================================
-
 for index, mistake in enumerate(mistakes[:MAX_IMAGES_TO_COPY]):
 
     source = os.path.join(
@@ -247,11 +210,7 @@ for index, mistake in enumerate(mistakes[:MAX_IMAGES_TO_COPY]):
 
     shutil.copy2(source, destination)
 
-
-# ==========================================
 # 10. Display summary
-# ==========================================
-
 print("\n========== ERROR ANALYSIS ==========")
 
 print("Total test images:", len(test_dataset))

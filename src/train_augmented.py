@@ -33,10 +33,7 @@ CLASSIFIER_LEARNING_RATE = 1e-5
 WEIGHT_DECAY = 0.01
 
 
-# ==========================================
 # Reproducibility
-# ==========================================
-
 random.seed(SEED)
 np.random.seed(SEED)
 torch.manual_seed(SEED)
@@ -49,10 +46,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 
-# ==========================================
 # Load dataset and create validation split
-# ==========================================
-
 # Load the same training images and annotations as previous experiments.
 full_dataset = BirdDataset(
     image_dir=TRAIN_IMAGE_DIR,
@@ -107,10 +101,7 @@ print(f"Training images: {len(train_subset)}")
 print(f"Validation images: {len(val_subset)}")
 
 
-# ==========================================
 # Load the previously fine-tuned model
-# ==========================================
-
 weights = ConvNeXt_Tiny_Weights.IMAGENET1K_V1
 model = convnext_tiny(weights=weights)
 
@@ -130,10 +121,7 @@ model = model.to(device)
 print(f"Loaded checkpoint: {INITIAL_MODEL_PATH}")
 
 
-# ==========================================
 # Configure which layers can learn
-# ==========================================
-
 # Freeze all model parameters first.
 for parameter in model.parameters():
     parameter.requires_grad = False
@@ -147,10 +135,7 @@ for parameter in model.classifier.parameters():
     parameter.requires_grad = True
 
 
-# ==========================================
 # Loss function and optimizer
-# ==========================================
-
 criterion = nn.CrossEntropyLoss()
 
 optimizer = torch.optim.AdamW(
@@ -172,18 +157,12 @@ use_amp = device.type == "cuda"
 scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
 
 
-# ==========================================
 # Training and validation
-# ==========================================
-
 best_val_loss = float("inf")
 
 for epoch in range(NUM_EPOCHS):
 
-    # ------------------------------
     # Training
-    # ------------------------------
-
     model.train()
 
     running_train_loss = 0.0
@@ -218,10 +197,7 @@ for epoch in range(NUM_EPOCHS):
     train_loss = running_train_loss / total_train
     train_accuracy = 100.0 * correct_train / total_train
 
-    # ------------------------------
     # Validation
-    # ------------------------------
-
     model.eval()
 
     running_val_loss = 0.0

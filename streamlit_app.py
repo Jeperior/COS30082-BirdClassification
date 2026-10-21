@@ -9,10 +9,7 @@ from PIL import Image
 from torchvision import transforms
 
 
-# =========================================================
 # 1. PROJECT CONFIGURATION
-# =========================================================
-
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SRC_DIR = os.path.join(PROJECT_DIR, "src")
@@ -30,11 +27,7 @@ if SRC_DIR not in sys.path:
 
 from model import create_model
 
-
-# =========================================================
 # 2. IMAGE TRANSFORMATION
-# =========================================================
-
 # These transformations must match the evaluation pipeline.
 test_transform = transforms.Compose([
     transforms.Resize((224, 224)),
@@ -45,11 +38,7 @@ test_transform = transforms.Compose([
     )
 ])
 
-
-# =========================================================
 # 3. LOAD THE CLASS NAMES
-# =========================================================
-
 def load_class_names():
     """
     Load the 200 bird species names from class_names.json.
@@ -78,11 +67,7 @@ def load_class_names():
 
     return class_names
 
-
-# =========================================================
 # 4. LOAD THE TRAINED MODEL
-# =========================================================
-
 @st.cache_resource
 def load_model():
     """
@@ -111,11 +96,7 @@ def load_model():
 
     return model
 
-
-# =========================================================
 # 5. BIRD CLASSIFICATION
-# =========================================================
-
 def predict_bird(image, model, class_names):
     """
     Return the five most likely bird species.
@@ -145,10 +126,7 @@ def predict_bird(image, model, class_names):
     return predictions
 
 
-# =========================================================
 # 6. STREAMLIT USER INTERFACE
-# =========================================================
-
 st.set_page_config(
     page_title="CUB-200 Bird Species Classifier",
     page_icon="",

@@ -1,12 +1,9 @@
 from torchvision import transforms
 
 
-# ============================================================
 # TRAINING TRANSFORMS
-# ============================================================
 # Stronger data augmentation to improve generalization
 # and investigate whether it reduces overfitting.
-# ============================================================
 
 train_transform = transforms.Compose([
 
@@ -42,11 +39,8 @@ train_transform = transforms.Compose([
 ])
 
 
-# ============================================================
 # VALIDATION AND TEST TRANSFORMS
-# ============================================================
 # Keep these deterministic so results are comparable.
-# ============================================================
 
 test_transform = transforms.Compose([
 

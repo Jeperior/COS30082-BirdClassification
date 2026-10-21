@@ -10,11 +10,7 @@ from dataset import BirdDataset
 from transforms import test_transform
 from model import create_model
 
-
-# ==========================================
 # 1. Configuration
-# ==========================================
-
 TEST_IMAGE_DIR = "data/Test"
 TEST_ANNOTATION_FILE = "data/test.txt"
 
@@ -25,22 +21,14 @@ NUM_CLASSES = 200
 
 RESULTS_DIR = "results"
 
-
-# ==========================================
 # 2. Select device
-# ==========================================
-
 device = torch.device(
     "cuda" if torch.cuda.is_available() else "cpu"
 )
 
 print("Using device:", device)
 
-
-# ==========================================
 # 3. Load test dataset
-# ==========================================
-
 test_dataset = BirdDataset(
     image_dir=TEST_IMAGE_DIR,
     annotation_file=TEST_ANNOTATION_FILE,
@@ -56,11 +44,7 @@ test_loader = DataLoader(
 
 print("Test images:", len(test_dataset))
 
-
-# ==========================================
 # 4. Load trained model
-# ==========================================
-
 model = create_model(num_classes=NUM_CLASSES)
 
 checkpoint = torch.load(
@@ -75,11 +59,7 @@ model.eval()
 
 print("Loaded model:", MODEL_PATH)
 
-
-# ==========================================
 # 5. Evaluate model
-# ==========================================
-
 all_predictions = []
 all_labels = []
 
@@ -101,11 +81,7 @@ with torch.no_grad():
             labels.tolist()
         )
 
-
-# ==========================================
 # 6. Calculate overall metrics
-# ==========================================
-
 top1_accuracy = accuracy_score(
     all_labels,
     all_predictions
@@ -143,11 +119,7 @@ average_class_accuracy = (
     np.mean(class_accuracies) * 100
 )
 
-
-# ==========================================
 # 7. Display overall results
-# ==========================================
-
 print("\n========== TEST RESULTS ==========")
 
 print(f"Top-1 Accuracy: {top1_accuracy:.2f}%")
@@ -161,11 +133,7 @@ print("Number of classes evaluated:", len(class_accuracies))
 
 print("==================================")
 
-
-# ==========================================
 # 8. Load class names
-# ==========================================
-
 import json
 
 CLASS_NAMES_PATH = "class_names.json"
@@ -193,11 +161,7 @@ if os.path.exists(CLASS_NAMES_PATH):
 def get_class_name(class_id):
     return class_names.get(class_id, f"Class {class_id}")
 
-
-# ==========================================
 # 9. Per-class accuracy report
-# ==========================================
-
 class_results = []
 
 for class_id in range(NUM_CLASSES):
@@ -246,11 +210,7 @@ for result in reversed(class_results_sorted[-10:]):
         f"({result['correct']}/{result['total']})"
     )
 
-
-# ==========================================
 # 10. Save per-class results
-# ==========================================
-
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
 csv_path = os.path.join(
@@ -282,11 +242,7 @@ with open(
 
 print(f"\nPer-class results saved to: {csv_path}")
 
-
-# ==========================================
 # 11. Generate confusion matrix
-# ==========================================
-
 matrix = confusion_matrix(
     all_labels,
     all_predictions,

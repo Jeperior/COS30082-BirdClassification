@@ -12,11 +12,7 @@ from dataset import BirdDataset
 from transforms import train_transform, test_transform
 from model import create_model
 
-
-# =========================
 # CONFIGURATION
-# =========================
-
 DATA_DIR = "data"
 TRAIN_IMAGE_DIR = os.path.join(DATA_DIR, "Train")
 TRAIN_ANNOTATION_FILE = os.path.join(DATA_DIR, "train.txt")
@@ -34,10 +30,7 @@ FEATURE_LEARNING_RATE = 1e-5
 CLASSIFIER_LEARNING_RATE = 1e-4
 
 
-# =========================
 # REPRODUCIBILITY
-# =========================
-
 random.seed(RANDOM_SEED)
 np.random.seed(RANDOM_SEED)
 torch.manual_seed(RANDOM_SEED)
@@ -45,11 +38,7 @@ torch.manual_seed(RANDOM_SEED)
 if torch.cuda.is_available():
     torch.cuda.manual_seed_all(RANDOM_SEED)
 
-
-# =========================
 # DEVICE
-# =========================
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 print(f"Using device: {device}")
@@ -57,11 +46,7 @@ print(f"Using device: {device}")
 if torch.cuda.is_available():
     print(f"GPU: {torch.cuda.get_device_name(0)}")
 
-
-# =========================
 # CHECK FILES
-# =========================
-
 if not os.path.isfile(BASELINE_MODEL_PATH):
     raise FileNotFoundError(
         f"Baseline checkpoint not found: {BASELINE_MODEL_PATH}"
@@ -72,11 +57,7 @@ if not os.path.isfile(TRAIN_ANNOTATION_FILE):
         f"Training annotations not found: {TRAIN_ANNOTATION_FILE}"
     )
 
-
-# =========================
 # LOAD DATASET
-# =========================
-
 print("\nLoading dataset...")
 
 train_dataset = BirdDataset(
@@ -123,11 +104,7 @@ validation_loader = DataLoader(
 print(f"Training images: {len(train_subset)}")
 print(f"Validation images: {len(validation_subset)}")
 
-
-# =========================
 # LOAD BASELINE MODEL
-# =========================
-
 print("\nLoading baseline model...")
 
 model = create_model(num_classes=NUM_CLASSES)
@@ -143,11 +120,7 @@ model.to(device)
 
 print("Baseline checkpoint loaded successfully.")
 
-
-# =========================
 # FREEZE / UNFREEZE LAYERS
-# =========================
-
 # Freeze the entire feature extractor first.
 for parameter in model.features.parameters():
     parameter.requires_grad = False
@@ -175,11 +148,7 @@ print(f"\nTotal parameters: {total_parameters:,}")
 print(f"Trainable parameters: {trainable_parameters:,}")
 print("Trainable layers: final feature stage + classifier")
 
-
-# =========================
 # LOSS AND OPTIMIZER
-# =========================
-
 criterion = nn.CrossEntropyLoss()
 
 optimizer = torch.optim.AdamW(
@@ -202,11 +171,7 @@ optimizer = torch.optim.AdamW(
     weight_decay=0.01
 )
 
-
-# =========================
 # MIXED PRECISION
-# =========================
-
 use_amp = device.type == "cuda"
 
 scaler = torch.amp.GradScaler(
@@ -214,11 +179,7 @@ scaler = torch.amp.GradScaler(
     enabled=use_amp
 )
 
-
-# =========================
 # TRAINING
-# =========================
-
 best_validation_loss = float("inf")
 best_validation_accuracy = 0.0
 best_model_weights = copy.deepcopy(model.state_dict())
@@ -229,10 +190,7 @@ print("\nStarting fine-tuning...\n")
 
 for epoch in range(NUM_EPOCHS):
 
-    # ---------------------
     # Training phase
-    # ---------------------
-
     model.train()
 
     running_loss = 0.0
@@ -267,10 +225,7 @@ for epoch in range(NUM_EPOCHS):
     train_loss = running_loss / total
     train_accuracy = 100.0 * correct / total
 
-    # ---------------------
     # Validation phase
-    # ---------------------
-
     model.eval()
 
     validation_loss_total = 0.0
@@ -332,10 +287,7 @@ for epoch in range(NUM_EPOCHS):
         print("  -> Best fine-tuned model saved.")
 
 
-# =========================
 # FINISHED
-# =========================
-
 model.load_state_dict(best_model_weights)
 
 print("\nFine-tuning completed!")

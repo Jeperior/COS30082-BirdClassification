@@ -12,11 +12,7 @@ from dataset import BirdDataset
 from transforms import train_transform, test_transform
 from model import create_model
 
-
-# ==========================================
 # 1. Configuration
-# ==========================================
-
 DATA_DIR = "data"
 TRAIN_IMAGE_DIR = os.path.join(DATA_DIR, "Train")
 TRAIN_ANNOTATION_FILE = os.path.join(DATA_DIR, "train.txt")
@@ -30,11 +26,7 @@ LEARNING_RATE = 0.0001
 NUM_CLASSES = 200
 RANDOM_SEED = 42
 
-
-# ==========================================
 # 2. Set random seeds
-# ==========================================
-
 random.seed(RANDOM_SEED)
 np.random.seed(RANDOM_SEED)
 torch.manual_seed(RANDOM_SEED)
@@ -42,20 +34,12 @@ torch.manual_seed(RANDOM_SEED)
 if torch.cuda.is_available():
     torch.cuda.manual_seed_all(RANDOM_SEED)
 
-
-# ==========================================
 # 3. Select training device
-# ==========================================
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 print("Using device:", device)
 
-
-# ==========================================
 # 4. Load dataset
-# ==========================================
-
 # Load the same images twice so training and validation
 # can use different image transformations.
 
@@ -92,11 +76,7 @@ validation_dataset = Subset(
 print("Training images:", len(train_dataset))
 print("Validation images:", len(validation_dataset))
 
-
-# ==========================================
 # 5. Create data loaders
-# ==========================================
-
 train_loader = DataLoader(
     train_dataset,
     batch_size=BATCH_SIZE,
@@ -113,11 +93,7 @@ validation_loader = DataLoader(
     pin_memory=torch.cuda.is_available()
 )
 
-
-# ==========================================
 # 6. Load pre-trained model
-# ==========================================
-
 model = create_model(num_classes=NUM_CLASSES)
 model = model.to(device)
 
@@ -130,11 +106,7 @@ for parameter in model.features.parameters():
 for parameter in model.classifier.parameters():
     parameter.requires_grad = True
 
-
-# ==========================================
 # 7. Define loss function and optimizer
-# ==========================================
-
 criterion = nn.CrossEntropyLoss()
 
 optimizer = torch.optim.AdamW(
@@ -142,11 +114,7 @@ optimizer = torch.optim.AdamW(
     lr=LEARNING_RATE
 )
 
-
-# ==========================================
 # 8. Training and validation
-# ==========================================
-
 best_validation_loss = float("inf")
 best_model_weights = copy.deepcopy(model.state_dict())
 
@@ -181,7 +149,7 @@ for epoch in range(NUM_EPOCHS):
     train_loss = running_train_loss / total_train
     train_accuracy = 100.0 * correct_train / total_train
 
-    # -------- Validation --------
+    # Validation
     model.eval()
 
     running_validation_loss = 0.0
@@ -235,9 +203,6 @@ for epoch in range(NUM_EPOCHS):
         print("Best model saved!")
 
 
-# ==========================================
 # 9. Finish
-# ==========================================
-
 print("\nTraining complete!")
 print("Best model saved to models/best_model.pth")

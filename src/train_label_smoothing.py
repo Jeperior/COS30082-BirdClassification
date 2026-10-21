@@ -12,10 +12,7 @@ from dataset import BirdDataset
 from transforms import train_transform, test_transform
 
 
-# ==========================================
 # Configuration
-# ==========================================
-
 SEED = 42
 
 DATA_DIR = "data"
@@ -36,11 +33,7 @@ WEIGHT_DECAY = 0.01
 
 LABEL_SMOOTHING = 0.1
 
-
-# ==========================================
 # Reproducibility
-# ==========================================
-
 random.seed(SEED)
 np.random.seed(SEED)
 torch.manual_seed(SEED)
@@ -53,10 +46,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 
-# ==========================================
 # Validate paths
-# ==========================================
-
 if not os.path.exists(INITIAL_MODEL_PATH):
     raise FileNotFoundError(
         f"Starting checkpoint not found: {INITIAL_MODEL_PATH}"
@@ -67,11 +57,7 @@ if not os.path.exists(ANNOTATION_FILE):
         f"Annotation file not found: {ANNOTATION_FILE}"
     )
 
-
-# ==========================================
 # Load dataset and create validation split
-# ==========================================
-
 full_dataset = BirdDataset(
     image_dir=TRAIN_IMAGE_DIR,
     annotation_file=ANNOTATION_FILE,
@@ -123,10 +109,7 @@ print(f"Training images: {len(train_subset)}")
 print(f"Validation images: {len(val_subset)}")
 
 
-# ==========================================
 # Load the regularized fine-tuned model
-# ==========================================
-
 weights = ConvNeXt_Tiny_Weights.IMAGENET1K_V1
 
 model = convnext_tiny(weights=weights)
@@ -146,10 +129,7 @@ model = model.to(device)
 print(f"Loaded checkpoint: {INITIAL_MODEL_PATH}")
 
 
-# ==========================================
 # Configure trainable layers
-# ==========================================
-
 # Freeze all parameters first.
 for parameter in model.parameters():
     parameter.requires_grad = False
@@ -163,11 +143,7 @@ for stage_index in [6, 7]:
 for parameter in model.classifier.parameters():
     parameter.requires_grad = True
 
-
-# ==========================================
 # Loss, optimizer, and scheduler
-# ==========================================
-
 # Label smoothing discourages excessively confident predictions.
 criterion = nn.CrossEntropyLoss(
     label_smoothing=LABEL_SMOOTHING
@@ -205,11 +181,7 @@ scaler = torch.amp.GradScaler(
     enabled=use_amp
 )
 
-
-# ==========================================
 # Training setup
-# ==========================================
-
 os.makedirs(os.path.dirname(SAVE_MODEL_PATH), exist_ok=True)
 
 best_val_loss = float("inf")
@@ -219,17 +191,10 @@ epochs_without_improvement = 0
 
 history = []
 
-
-# ==========================================
 # Training and validation
-# ==========================================
-
 for epoch in range(NUM_EPOCHS):
 
-    # --------------------------------------
     # Training
-    # --------------------------------------
-
     model.train()
 
     running_train_loss = 0.0
@@ -268,10 +233,7 @@ for epoch in range(NUM_EPOCHS):
     train_loss = running_train_loss / total_train
     train_accuracy = 100.0 * correct_train / total_train
 
-    # --------------------------------------
     # Validation
-    # --------------------------------------
-
     model.eval()
 
     running_val_loss = 0.0
@@ -362,11 +324,7 @@ for epoch in range(NUM_EPOCHS):
         print("\nEarly stopping triggered.")
         break
 
-
-# ==========================================
 # Final summary
-# ==========================================
-
 print("\n" + "=" * 45)
 print("LABEL SMOOTHING FINE-TUNING COMPLETE")
 print("=" * 45)

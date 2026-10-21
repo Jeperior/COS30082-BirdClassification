@@ -4,16 +4,12 @@ from dataset import BirdDataset
 from transforms import train_transform
 
 
-# ============================================================
 # DATASET SETUP
-# ============================================================
-
 # Folder containing the training bird images.
 train_image_dir = "data/Train"
 
 # File containing the training image filenames and labels.
 train_annotation_file = "data/train.txt"
-
 
 # Create the training dataset.
 #
@@ -26,11 +22,7 @@ train_dataset = BirdDataset(
     transform=train_transform
 )
 
-
-# ============================================================
 # DATALOADER SETUP
-# ============================================================
-
 # DataLoader organizes the dataset into batches.
 #
 # batch_size=32 means the model receives 32 images
@@ -44,11 +36,7 @@ train_loader = DataLoader(
     shuffle=True
 )
 
-
-# ============================================================
 # TEST THE DATALOADER
-# ============================================================
-
 # Get the first batch of images and labels.
 images, labels = next(iter(train_loader))
 
