@@ -31,6 +31,7 @@ MODELS = {
     "Data augmentation": "finetuned_augmented_model.pth",
     "Regularised fine-tuning": "finetuned_regularized_model.pth",
     "Label smoothing": "finetuned_label_smoothing_model.pth",
+    "Full dataset": "final_full_data_model.pth"
 }
 
 
