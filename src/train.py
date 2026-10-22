@@ -120,7 +120,7 @@ best_model_weights = copy.deepcopy(model.state_dict())
 
 for epoch in range(NUM_EPOCHS):
 
-    # -------- Training --------
+    # Training 
     model.train()
 
     running_train_loss = 0.0
